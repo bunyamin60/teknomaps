@@ -1,26 +1,373 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Mat gece paleti: derin antrasit zeminler, arduvaz grisi ikincil ton */
+  --color-ns-bg: #0f141c;
+  --color-ns-shell: #0b0f16;
+  --color-ns-card: #151b26;
+  --color-ns-panel: #151b26;
+  --color-ns-border: #1f2937;
+  --color-ns-hover: #1b2331;
+  --color-ns-muted: #94a3b8;
+  --color-ns-dim: #64748b;
+  --color-ns-blue: #1d9bf0;
+  --color-ns-blue-soft: #38bdf8;
+
+  /* Harita katmanı */
+  --color-map-bg: #151b26;
+  --color-map-road: #2a3340;
+  --color-map-label: #94a3b8;
+  --color-map-label-strong: #f1f5f9;
+  --color-map-live: #1d9bf0;
+  --color-map-person: #38bdf8;
+  --color-map-idle: #64748b;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --animate-self-pulse: self-pulse 3s ease-out infinite;
+  --animate-fade-up: fade-up 0.28s ease-out both;
+  --animate-slide-in: slide-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-ns-bg);
+  color: #f1f5f9;
+  font-family: var(--font-sans);
+  overscroll-behavior: none;
+}
+
+::selection {
+  background: rgba(29, 155, 240, 0.3);
+}
+
+/* ---------- Scrollbar ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #263143 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #263143;
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #33405a;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- Keyframes ---------- */
+@keyframes self-pulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.4;
+  }
+  70% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ticker {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.live-dot {
+  animation: ticker 1.6s ease-in-out infinite;
+}
+
+/* ---------- Leaflet: mat gece teması ---------- */
+.leaflet-container {
+  background: var(--color-map-bg);
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+/*
+ * Zemin ve etiketler ayrı karo katmanları olarak yüklenir; böylece yol
+ * çizgilerini yumuşak koyu griye çekerken etiketleri okunur tutabiliyoruz.
+ */
+.tm-tiles-base {
+  filter: saturate(0.2) brightness(1.04) contrast(0.78);
+}
+
+.tm-tiles-labels {
+  filter: grayscale(1) brightness(1.25) contrast(0.8);
+  opacity: 0.6;
+}
+
+.leaflet-control-attribution {
+  background: rgba(15, 20, 28, 0.82) !important;
+  color: #64748b !important;
+  border-radius: 8px 0 0 0;
+  font-size: 10px !important;
+  padding: 2px 8px !important;
+  backdrop-filter: blur(6px);
+}
+.leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
+
+.leaflet-pane {
+  z-index: 1;
+}
+
+/* ---------- İşaretçiler: tek tip, mat, halosuz ---------- */
+.tm-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tm-pin:hover {
+  transform: translateY(-2px);
+  z-index: 620;
+}
+
+/* Açık masası olmayan mekanlar geri planda durur. */
+.tm-pin--idle {
+  opacity: 0.66;
+}
+.tm-pin--idle:hover,
+.tm-pin--idle.is-selected {
+  opacity: 1;
+}
+
+.tm-pin__body {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 11px;
+  background: var(--tm-accent);
+  color: #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Renkli emojiler mat temaya uyması için tek tona indirilir. */
+.tm-pin__glyph {
+  filter: grayscale(1) brightness(1.65) contrast(0.85);
+}
+
+.tm-pin--person .tm-pin__body {
+  width: 27px;
+  height: 27px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.tm-pin__label {
+  position: absolute;
+  top: 37px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 132px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(15, 20, 28, 0.78);
+  color: var(--color-map-label);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.tm-pin:hover .tm-pin__label,
+.tm-pin.is-selected .tm-pin__label {
+  color: var(--color-map-label-strong);
+  background: rgba(15, 20, 28, 0.94);
+}
+
+.tm-pin.is-selected {
+  opacity: 1;
+  transform: scale(1.06);
+  z-index: 640;
+}
+
+.tm-pin.is-selected .tm-pin__body {
+  box-shadow:
+    0 0 0 2.5px rgba(241, 245, 249, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+.tm-pin.is-dimmed {
+  opacity: 0.24;
+}
+
+/* ---------- Canlı masa rozeti ---------- */
+.tm-pin__badge {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 176px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 155, 240, 0.26);
+  background: rgba(15, 20, 28, 0.9);
+  color: var(--color-map-person);
+  font-family: var(--font-sans);
+  font-size: 9.5px;
+  font-weight: 500;
+  line-height: 1.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+/* Kullanıcının kendi açtığı masa. */
+.tm-pin__badge--mine {
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #e0f2fe;
+}
+
+/* ---------- Odak alanı (bağlantı kurulmamış kişiler) ---------- */
+.tm-pin--fuzzy .tm-pin__body {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1.5px dashed rgba(56, 189, 248, 0.6);
+  color: var(--color-map-person);
+  box-shadow: none;
+  font-size: 12px;
+}
+
+.tm-pin--fuzzy .tm-pin__glyph {
+  filter: none;
+}
+
+.tm-pin__label--fuzzy {
+  max-width: 178px;
+}
+
+/* Kesikli çember çok yavaş akar: konumun yaklaşık olduğunu hissettirir. */
+.tm-fuzzy-ring {
+  animation: fuzzy-drift 16s linear infinite;
+}
+
+@keyframes fuzzy-drift {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-fuzzy-ring {
+    animation: none;
+  }
+}
+
+/* Kullanıcının kendi konumu */
+.tm-self {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+}
+.tm-self__ring {
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  background: rgba(29, 155, 240, 0.14);
+  animation: var(--animate-self-pulse);
+}
+.tm-self__core {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: var(--color-map-live);
+  border: 3px solid #f1f5f9;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* Navigasyon simülasyonundaki hareketli imleç */
+.tm-walker {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--color-map-live);
+  border: 2px solid rgba(241, 245, 249, 0.8);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+}
+
+/* ---------- Utilities ---------- */
+.tm-glass {
+  background: rgba(21, 27, 38, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.tm-scroll-hidden {
+  scrollbar-width: none;
+}
+.tm-scroll-hidden::-webkit-scrollbar {
+  display: none;
 }
