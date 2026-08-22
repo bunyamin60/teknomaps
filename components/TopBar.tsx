@@ -61,17 +61,18 @@ export default function TopBar({
               type="button"
               onClick={() => onChangeTab(tab.id)}
               className={cn(
-                "group relative flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-4 py-3 text-[13px] font-semibold transition-colors sm:text-sm",
+                "group relative flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-4 py-3.5 text-[13px] font-semibold transition-colors sm:text-sm",
                 isActive ? "text-white" : "text-ns-muted hover:bg-ns-hover hover:text-slate-200",
               )}
             >
               <Icon
                 size={14}
-                className={cn(isLive && "text-[#FF5A5A]", isLive && "live-dot")}
+                strokeWidth={1.75}
+                className={cn(isLive && "text-ns-blue", isLive && "live-dot")}
               />
               {tab.label}
               {isLive ? (
-                <span className="ml-0.5 hidden rounded-full bg-[#FF5A5A]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#FF7A7A] sm:block">
+                <span className="ml-0.5 hidden rounded-full bg-ns-blue/12 px-2 py-0.5 text-[10px] font-bold text-ns-blue-soft sm:block">
                   CANLI
                 </span>
               ) : null}

@@ -12,10 +12,15 @@ export interface TableParticipant {
   name: string;
   initials: string;
   handle: string;
+  /** "Gömülü Yazılım Mühendisi" */
+  title?: string;
   /** "ROS", "C++", "Computer Vision" */
   skills: string[];
   /** Masayı açan kişi. */
   isHost?: boolean;
+  engineeringScore: number;
+  scoreBreakdown: ScoreBreakdown;
+  verifiedMetrics: VerifiedMetrics;
 }
 
 /** Masanın açık çağrısı: kaç sandalye boş ve ne tür destek aranıyor. */
@@ -59,6 +64,8 @@ export interface WorkspacePin {
   /** Kullanıcı burada masa açabilir mi? */
   hostsTables: boolean;
   table?: WorkTable;
+  /** Açık donanım imecesi: para değil dayanışma. */
+  equipment?: EquipmentItem[];
 }
 
 /** Bağlantı kurulmamış kişiler için gösterilen şeffaf odak alanı. */
@@ -89,6 +96,10 @@ export interface PersonPin {
   focusArea: FuzzyArea;
   /** Yalnızca bağlantı onayından sonra kullanılır. */
   position: LatLng;
+  /** NSosyal Doğrulanmış Mühendislik Skoru (NES). */
+  engineeringScore: number;
+  scoreBreakdown: ScoreBreakdown;
+  verifiedMetrics: VerifiedMetrics;
 }
 
 export type MapPin = WorkspacePin | PersonPin;
@@ -143,6 +154,79 @@ export interface CurrentUser {
   district: string;
   skills: string[];
   position: LatLng;
+  /** Paylaşılan her cihaz veya kabul edilen imece için biriken teşekkür. */
+  solidarityPoints: number;
+  engineeringScore: number;
+  scoreBreakdown: ScoreBreakdown;
+  verifiedMetrics: VerifiedMetrics;
+}
+
+/** NES alt puanları: yarışma 60, donanım 25, kod 15. */
+export interface ScorePillar {
+  /** Kazanılan puan. */
+  score: number;
+  /** Kategorinin azami ağırlığı. */
+  max: number;
+  /** Tıklanınca açılan doğrulanmış kayıtlar. */
+  records: string[];
+}
+
+export interface ScoreBreakdown {
+  /** Resmî dereceler ve jüri puanı, azami 60. */
+  competition: ScorePillar;
+  /** Donanım imecesi ve garaj katkısı, azami 25. */
+  hardware: ScorePillar;
+  /** Doğrulanmış çıktı ve kod kalitesi, azami 15. */
+  code: ScorePillar;
+}
+
+export interface VerifiedMetrics {
+  /** Doğrulanmış sprint / çıktı döngüsü. */
+  sprints: number;
+  /** Açık cihaz ve şematik paylaşımı. */
+  imeceCount: number;
+  /** T3, TEKNOFEST, GitHub gibi kurum sayısı. */
+  orgCount: number;
+  /** Kurum adları; rozet alt metni. */
+  verifiedInstitutions: string[];
+}
+
+/** Canlı masa oturumu: BLE yakınlık simülasyonu. */
+export interface LiveSession {
+  workspaceId: string;
+  venueName: string;
+  topic: string;
+  startedAt: number;
+  peers: Array<{ name: string; handle: string }>;
+}
+
+/** Açık donanım kategorisi. Ücret veya kiralama yok; yalnızca imece. */
+export type EquipmentCategory =
+  | "3D_PRINT"
+  | "TEST_MEASURE"
+  | "SOLDERING"
+  | "ENERGY";
+
+/**
+ * Atölye veya takımın dayanışmaya açtığı cihaz.
+ * Maddi kazanç alanı yoktur; konum kamusal mekan üzerinden görünür.
+ */
+export interface EquipmentItem {
+  id: string;
+  name: string;
+  category: EquipmentCategory;
+  /** Takım veya atölye adı. */
+  provider: string;
+  note: string;
+  isAvailable: boolean;
+}
+
+/** İmeceye cihaz ekleme formunun çıktısı. */
+export interface NewEquipmentDraft {
+  name: string;
+  category: EquipmentCategory;
+  venueId: string;
+  note: string;
 }
 
 export interface AiMatch {

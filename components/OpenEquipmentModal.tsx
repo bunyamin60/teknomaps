@@ -1,41 +1,55 @@
 "use client";
 
-import { Clock, Lock, MapPin as MapPinIcon, Plus, X } from "lucide-react";
+import { Handshake, Lock, MapPin as MapPinIcon, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { distanceM, formatDistance } from "@/lib/geo";
-import { venueLabel } from "@/lib/mockData";
-import type { CurrentUser, NewTableDraft, WorkspacePin } from "@/lib/types";
+import {
+  EQUIPMENT_CATEGORY_LABELS,
+  canHostEquipment,
+  venueLabel,
+} from "@/lib/mockData";
+import type {
+  CurrentUser,
+  EquipmentCategory,
+  NewEquipmentDraft,
+  WorkspacePin,
+} from "@/lib/types";
 
-interface OpenTableModalProps {
-  /** Masa açılabilecek, şu an boş olan mekanlar. */
+const CATEGORIES: EquipmentCategory[] = [
+  "3D_PRINT",
+  "TEST_MEASURE",
+  "SOLDERING",
+  "ENERGY",
+];
+
+interface OpenEquipmentModalProps {
   venues: WorkspacePin[];
   currentUser: CurrentUser;
-  initialVenueId?: string | null;
   onClose: () => void;
-  onCreate: (draft: NewTableDraft) => void;
+  onCreate: (draft: NewEquipmentDraft) => void;
 }
 
-export default function OpenTableModal({
+export default function OpenEquipmentModal({
   venues,
   currentUser,
-  initialVenueId,
   onClose,
   onCreate,
-}: OpenTableModalProps) {
+}: OpenEquipmentModalProps) {
   const sorted = useMemo(
     () =>
-      [...venues].sort(
-        (a, b) =>
-          distanceM(currentUser.position, a.position) -
-          distanceM(currentUser.position, b.position),
-      ),
+      [...venues]
+        .filter(canHostEquipment)
+        .sort(
+          (a, b) =>
+            distanceM(currentUser.position, a.position) -
+            distanceM(currentUser.position, b.position),
+        ),
     [venues, currentUser.position],
   );
 
-  const [venueId, setVenueId] = useState(
-    () => initialVenueId ?? sorted[0]?.id ?? "",
-  );
-  const [topic, setTopic] = useState("");
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState<EquipmentCategory>("3D_PRINT");
+  const [venueId, setVenueId] = useState(() => sorted[0]?.id ?? "");
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -47,11 +61,16 @@ export default function OpenTableModal({
   }, [onClose]);
 
   const selected = sorted.find((venue) => venue.id === venueId);
-  const canSubmit = Boolean(venueId) && topic.trim().length > 2;
+  const canSubmit = Boolean(venueId) && name.trim().length > 2;
 
   const submit = () => {
     if (!canSubmit) return;
-    onCreate({ venueId, topic: topic.trim(), note: note.trim() });
+    onCreate({
+      name: name.trim(),
+      category,
+      venueId,
+      note: note.trim(),
+    });
   };
 
   return (
@@ -66,15 +85,15 @@ export default function OpenTableModal({
       <div className="relative w-full max-w-[420px] overflow-hidden rounded-2xl border border-ns-border bg-ns-card animate-[var(--animate-fade-up)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)]">
         <header className="flex items-start gap-3 border-b border-ns-border px-4 py-3.5">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ns-blue/12 text-ns-blue">
-            <Plus size={18} strokeWidth={1.75} />
+            <Handshake size={18} strokeWidth={1.75} />
           </span>
           <div className="min-w-0 flex-1">
             <h2 className="text-[15px] font-semibold text-slate-50">
-              Çalışma Masası Aç
+              İmeceye Cihaz Ekle
             </h2>
             <p className="mt-0.5 text-[12px] leading-snug text-ns-muted">
-              Masan seçtiğin mekanın konumu üzerinden görünür, kişisel konumun
-              paylaşılmaz.
+              Cihazın kamusal bir atölye veya stand üzerinden görünür. Para,
+              kiralama veya ücret yok; yalnızca dayanışma.
             </p>
           </div>
           <button
@@ -88,7 +107,33 @@ export default function OpenTableModal({
         </header>
 
         <div className="space-y-3.5 px-4 py-4">
-          <Field label="Mekan" icon={MapPinIcon}>
+          <Field label="Cihaz adı">
+            <input
+              autoFocus
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Creality K1 Max 3D Yazıcı"
+              className="w-full rounded-xl border border-ns-border bg-ns-panel px-3 py-2.5 text-[13px] text-slate-100 outline-none transition-colors placeholder:text-ns-dim focus:border-ns-blue/60"
+            />
+          </Field>
+
+          <Field label="Kategori">
+            <select
+              value={category}
+              onChange={(event) =>
+                setCategory(event.target.value as EquipmentCategory)
+              }
+              className="w-full rounded-xl border border-ns-border bg-ns-panel px-3 py-2.5 text-[13px] text-slate-100 outline-none transition-colors focus:border-ns-blue/60"
+            >
+              {CATEGORIES.map((item) => (
+                <option key={item} value={item}>
+                  {EQUIPMENT_CATEGORY_LABELS[item]}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Cihazın bulunduğu mekan / stand" icon={MapPinIcon}>
             <select
               value={venueId}
               onChange={(event) => setVenueId(event.target.value)}
@@ -97,7 +142,9 @@ export default function OpenTableModal({
               {sorted.map((venue) => (
                 <option key={venue.id} value={venue.id}>
                   {venue.name} · {venue.district} ·{" "}
-                  {formatDistance(distanceM(currentUser.position, venue.position))}
+                  {formatDistance(
+                    distanceM(currentUser.position, venue.position),
+                  )}
                 </option>
               ))}
             </select>
@@ -108,30 +155,20 @@ export default function OpenTableModal({
             ) : null}
           </Field>
 
-          <Field label="Geliştirilen proje / konu">
-            <input
-              autoFocus
-              value={topic}
-              onChange={(event) => setTopic(event.target.value)}
-              placeholder="Gömülü Sistem & Otonom Sürüş"
-              className="w-full rounded-xl border border-ns-border bg-ns-panel px-3 py-2.5 text-[13px] text-slate-100 outline-none transition-colors placeholder:text-ns-dim focus:border-ns-blue/60"
-            />
-          </Field>
-
-          <Field label="İhtiyaç / çağrı" optional>
+          <Field label="Paylaşım notu">
             <textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
               rows={2}
-              placeholder="Frontend ve UI konusunda sohbet edecek birini arıyoruz"
+              placeholder="Hafta içi 14:00-18:00 arası müsait"
               className="w-full resize-none rounded-xl border border-ns-border bg-ns-panel px-3 py-2.5 text-[13px] leading-relaxed text-slate-100 outline-none transition-colors placeholder:text-ns-dim focus:border-ns-blue/60"
             />
           </Field>
 
           <p className="flex items-start gap-1.5 text-[11.5px] leading-snug text-ns-dim">
             <Lock size={12} strokeWidth={1.75} className="mt-px shrink-0" />
-            Masa 3 saat sonra haritadan otomatik kalkar. Dilediğin an kendin de
-            kapatabilirsin.
+            İmece paylaşımı açık olduğu sürece haritada 🤝 rozeti görünür.
+            Karşılığında ekosistem teşekkürü ve dayanışma puanı birikir.
           </p>
         </div>
 
@@ -146,8 +183,8 @@ export default function OpenTableModal({
                 : "flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-ns-hover py-3 text-[13.5px] font-semibold text-ns-dim"
             }
           >
-            <Clock size={16} strokeWidth={1.75} />
-            Masayı Haritada Başlat (3 Saat)
+            <Handshake size={16} strokeWidth={1.75} />
+            Dayanışmaya Aç (Ücretsiz)
           </button>
         </footer>
       </div>
@@ -157,12 +194,10 @@ export default function OpenTableModal({
 
 function Field({
   label,
-  optional,
   icon: Icon,
   children,
 }: {
   label: string;
-  optional?: boolean;
   icon?: typeof MapPinIcon;
   children: React.ReactNode;
 }) {
@@ -171,9 +206,6 @@ function Field({
       <span className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-ns-dim uppercase">
         {Icon ? <Icon size={12} strokeWidth={1.75} /> : null}
         {label}
-        {optional ? (
-          <span className="font-medium normal-case">(opsiyonel)</span>
-        ) : null}
       </span>
       {children}
     </label>

@@ -70,21 +70,27 @@ function buildWorkspaceIcon(
   dimmed: boolean,
 ): L.DivIcon {
   const table = pin.table;
+  const hasImece = (pin.equipment?.length ?? 0) > 0;
   const badge = table
     ? `<span class="tm-pin__badge${
         table.isMine ? " tm-pin__badge--mine" : ""
       }">${table.participants.length} geliştirici · ${escapeHtml(
         table.topic,
       )}</span>`
+    : hasImece
+      ? `<span class="tm-pin__badge">🤝 ${pin.equipment?.length ?? 0} imece cihazı</span>`
+      : "";
+  const imeceMark = hasImece
+    ? `<span class="tm-pin__imece" title="Açık imece">🤝</span>`
     : "";
 
   return L.divIcon({
     className: "",
     html: `
-      <div class="tm-pin tm-pin--venue${table ? "" : " tm-pin--idle"}${
+      <div class="tm-pin tm-pin--venue${table || hasImece ? "" : " tm-pin--idle"}${
         selected ? " is-selected" : ""
       }${dimmed ? " is-dimmed" : ""}" style="--tm-accent:${pinAccent(pin)}">
-        <span class="tm-pin__body"><span class="tm-pin__glyph">${escapeHtml(
+        <span class="tm-pin__body">${imeceMark}<span class="tm-pin__glyph">${escapeHtml(
           pin.glyph,
         )}</span></span>
         <span class="tm-pin__label">${escapeHtml(pin.name)}</span>
@@ -398,7 +404,15 @@ export default function MapComponent({
               key={pin.id}
               position={[pin.position.lat, pin.position.lng]}
               icon={buildWorkspaceIcon(pin, isSelected, isDimmed)}
-              zIndexOffset={isSelected ? 600 : pin.table ? 300 : 100}
+              zIndexOffset={
+                isSelected
+                  ? 600
+                  : pin.table
+                    ? 300
+                    : pin.equipment?.length
+                      ? 220
+                      : 100
+              }
               eventHandlers={{ click: () => onSelectPin(pin) }}
             />
           );

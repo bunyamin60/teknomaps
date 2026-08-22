@@ -2,7 +2,8 @@
 
 import { Radio, Search, Sparkles, TrendingUp } from "lucide-react";
 import { SUGGESTED, TRENDS } from "@/lib/feedData";
-import { PEOPLE, WORKSPACES, pinAccent } from "@/lib/mockData";
+import { CURRENT_USER, PEOPLE, WORKSPACES, pinAccent } from "@/lib/mockData";
+import EngineeringScoreCard from "./EngineeringScoreCard";
 
 interface RightRailProps {
   onOpenMaps: () => void;
@@ -11,6 +12,9 @@ interface RightRailProps {
 export default function RightRail({ onOpenMaps }: RightRailProps) {
   const liveTables = WORKSPACES.filter((workspace) => workspace.table);
   const onlinePeople = PEOPLE.filter((person) => person.online).length;
+  const ranked = [...PEOPLE].sort(
+    (a, b) => b.engineeringScore - a.engineeringScore,
+  );
 
   return (
     <aside className="hidden h-full w-[330px] shrink-0 overflow-y-auto border-l border-ns-border px-4 py-3 xl:block">
@@ -22,10 +26,50 @@ export default function RightRail({ onOpenMaps }: RightRailProps) {
         />
       </div>
 
+      <EngineeringScoreCard
+        score={CURRENT_USER.engineeringScore}
+        breakdown={CURRENT_USER.scoreBreakdown}
+        metrics={CURRENT_USER.verifiedMetrics}
+      />
+
+      <section className="mt-3 mb-3 overflow-hidden rounded-2xl border border-ns-border bg-ns-card">
+        <div className="border-b border-ns-border px-4 py-3">
+          <h3 className="text-[15px] font-bold text-slate-50">
+            NES Sıralaması
+          </h3>
+          <p className="mt-0.5 text-[11.5px] text-ns-dim">
+            Doğrulanmış mühendislik skoru · gönüllü imece
+          </p>
+        </div>
+        <div className="divide-y divide-ns-border">
+          {ranked.map((person) => (
+            <button
+              key={person.id}
+              type="button"
+              onClick={onOpenMaps}
+              className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-ns-hover"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-full border border-ns-border bg-ns-panel text-[11px] font-bold text-ns-blue-soft">
+                {person.engineeringScore}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold text-slate-100">
+                  {person.name}
+                </span>
+                <span className="block truncate text-[11px] text-ns-dim">
+                  {person.verifiedMetrics.sprints} sprint ·{" "}
+                  {person.verifiedMetrics.imeceCount} imece
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <section className="mb-3 overflow-hidden rounded-2xl border border-ns-blue/25 bg-ns-card">
         <div className="flex items-center justify-between border-b border-ns-border px-4 py-2.5">
           <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-white">
-            <Radio size={15} className="live-dot text-[#FF5A5A]" />
+            <Radio size={15} strokeWidth={1.75} className="live-dot text-ns-blue" />
             TeknoMaps Canlı
           </h3>
           <span className="text-[11px] font-semibold text-ns-muted">
@@ -45,8 +89,8 @@ export default function RightRail({ onOpenMaps }: RightRailProps) {
                 <span
                   className="grid size-8 shrink-0 place-items-center rounded-lg text-sm"
                   style={{
-                    background: `linear-gradient(150deg, ${accent}33, #0d1117)`,
-                    border: `1px solid ${accent}66`,
+                    background: `${accent}22`,
+                    border: `1px solid ${accent}55`,
                   }}
                 >
                   {workspace.glyph}
@@ -104,13 +148,11 @@ export default function RightRail({ onOpenMaps }: RightRailProps) {
         {SUGGESTED.map((person) => (
           <div
             key={person.handle}
-            className="flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-ns-hover"
+            className="flex items-center gap-2.5 px-4 py-2.5 transition-colors hover:bg-ns-hover"
           >
             <span
               className="grid size-9 shrink-0 place-items-center rounded-full text-[11px] font-bold text-white"
-              style={{
-                background: `linear-gradient(150deg, ${person.accent}, #0d1117 140%)`,
-              }}
+              style={{ background: person.accent }}
             >
               {person.initials}
             </span>
@@ -124,7 +166,7 @@ export default function RightRail({ onOpenMaps }: RightRailProps) {
             </span>
             <button
               type="button"
-              className="rounded-full bg-white/95 px-3 py-1 text-[12px] font-bold text-[#0d1117] transition-colors hover:bg-white"
+              className="rounded-full bg-slate-100 px-3.5 py-1.5 text-[12px] font-bold text-[#0F141C] transition-colors hover:bg-white"
             >
               Takip et
             </button>

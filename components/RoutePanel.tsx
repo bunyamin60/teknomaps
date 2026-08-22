@@ -176,11 +176,11 @@ export default function RoutePanel({
         })}
       </ol>
 
-      <div className="flex gap-1.5 border-t border-ns-border px-3.5 py-2.5">
+      <div className="flex gap-2 border-t border-ns-border px-4 py-3">
         <button
           type="button"
           onClick={onToggleNavigation}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-ns-blue px-3 py-2 text-[12.5px] font-semibold text-white transition-colors hover:bg-[#1a8cd8]"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-ns-blue px-3 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#1a8cd8]"
         >
           {isNavigating ? (
             <Pause size={14} strokeWidth={1.75} />

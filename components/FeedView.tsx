@@ -49,8 +49,7 @@ export default function FeedView({ navTab, topTab, onOpenMaps }: FeedViewProps) 
             <span
               className="grid size-10 shrink-0 place-items-center self-start rounded-full text-xs font-bold text-white"
               style={{
-                background: `linear-gradient(150deg, ${post.accent}, #0d1117 140%)`,
-                boxShadow: `0 0 0 1px ${post.accent}55`,
+                background: post.accent,
               }}
             >
               {post.initials}
@@ -90,7 +89,7 @@ export default function FeedView({ navTab, topTab, onOpenMaps }: FeedViewProps) 
 
               <div className="mt-2.5 flex items-center justify-between pr-6 text-ns-muted">
                 <PostAction icon={MessageSquare} value={post.stats.replies} hover="hover:text-ns-blue" />
-                <PostAction icon={Repeat2} value={post.stats.reposts} hover="hover:text-emerald-400" />
+                <PostAction icon={Repeat2} value={post.stats.reposts} hover="hover:text-ns-blue-soft" />
                 <PostAction icon={Heart} value={post.stats.likes} hover="hover:text-rose-400" />
                 <PostAction icon={Bookmark} hover="hover:text-ns-blue" />
                 <PostAction icon={Share2} hover="hover:text-ns-blue" />
@@ -130,19 +129,19 @@ function TeknoMapsPromo({ onOpenMaps }: { onOpenMaps: () => void }) {
   const onlinePeople = PEOPLE.filter((person) => person.online).length;
 
   return (
-    <section className="m-3 overflow-hidden rounded-2xl border border-ns-blue/30 bg-gradient-to-br from-[#0d1b2a] via-[#101a26] to-[#0d1117] p-4">
-      <div className="flex items-start gap-3">
-        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#1D9BF0] to-[#0084FF] text-white shadow-[0_0_24px_-4px_rgba(29,155,240,0.9)]">
-          <Rocket size={22} />
+    <section className="m-4 overflow-hidden rounded-2xl border border-ns-border bg-ns-card p-5">
+      <div className="flex items-start gap-3.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-ns-blue text-white">
+          <Rocket size={22} strokeWidth={1.75} />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 className="flex flex-wrap items-center gap-2 text-[16px] font-bold text-white">
+          <h2 className="flex flex-wrap items-center gap-2 text-[16px] font-bold text-slate-50">
             TeknoMaps ile alandaki ekibini bul
-            <span className="rounded-full bg-[#FF5A5A]/15 px-1.5 py-0.5 text-[10px] font-bold text-[#FF7A7A]">
+            <span className="rounded-full bg-ns-blue/12 px-2 py-0.5 text-[10px] font-bold text-ns-blue-soft">
               CANLI
             </span>
           </h2>
-          <p className="mt-1 text-[13px] leading-relaxed text-ns-muted">
+          <p className="mt-1.5 text-[13px] leading-relaxed text-ns-muted">
             {liveTables} canlı çalışma masası, {onlinePeople} geliştirici çevrimiçi.
             Uzmanlık alanın{" "}
             <span className="font-semibold text-slate-200">
@@ -150,21 +149,21 @@ function TeknoMapsPromo({ onOpenMaps }: { onOpenMaps: () => void }) {
             </span>{" "}
             ile eşleşen kafeler, kütüphaneler ve atölyelere rota çizelim.
           </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2.5">
             <button
               type="button"
               onClick={onOpenMaps}
-              className="flex items-center gap-1.5 rounded-full bg-ns-blue px-4 py-2 text-[13px] font-bold text-white transition-colors hover:bg-[#1a8cd8]"
+              className="flex items-center gap-1.5 rounded-full bg-ns-blue px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-[#1a8cd8]"
             >
-              <MapPin size={15} />
+              <MapPin size={15} strokeWidth={1.75} />
               Haritayı Aç
             </button>
             <button
               type="button"
               onClick={onOpenMaps}
-              className="flex items-center gap-1.5 rounded-full border border-ns-border px-4 py-2 text-[13px] font-semibold text-slate-200 transition-colors hover:bg-ns-hover"
+              className="flex items-center gap-1.5 rounded-full border border-ns-border px-5 py-2.5 text-[13px] font-semibold text-slate-200 transition-colors hover:bg-ns-hover"
             >
-              <TrendingUp size={15} />
+              <TrendingUp size={15} strokeWidth={1.75} />
               Eşleşmelerimi gör
             </button>
           </div>
@@ -177,7 +176,7 @@ function TeknoMapsPromo({ onOpenMaps }: { onOpenMaps: () => void }) {
 function Composer() {
   return (
     <div className="flex gap-3 border-b border-ns-border px-4 py-3">
-      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#0084FF] to-[#7F5AF0] text-xs font-bold text-white">
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ns-blue text-xs font-bold text-white">
         {CURRENT_USER.initials}
       </span>
       <div className="min-w-0 flex-1">
@@ -199,7 +198,7 @@ function Composer() {
           </div>
           <button
             type="button"
-            className="rounded-full bg-ns-blue/40 px-4 py-1.5 text-sm font-bold text-white/70"
+            className="rounded-full bg-ns-blue/40 px-5 py-2 text-sm font-bold text-white/70"
           >
             Gönder
           </button>
@@ -232,7 +231,7 @@ const SECTION_META: Record<
   },
   profile: {
     title: CURRENT_USER.name,
-    description: `${CURRENT_USER.title} · ${CURRENT_USER.skills.join(" · ")}`,
+    description: `${CURRENT_USER.title} · NES ${CURRENT_USER.engineeringScore}/100 · ${CURRENT_USER.skills.join(" · ")}`,
     icon: User,
   },
 };
@@ -273,7 +272,7 @@ function HashtagPanel() {
               </span>
               <span className="text-[11px] text-ns-muted">{item.posts}</span>
             </span>
-            <span className="text-[11px] font-bold text-emerald-400">
+            <span className="text-[11px] font-bold text-ns-blue-soft">
               {item.growth}
             </span>
           </button>

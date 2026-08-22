@@ -6,7 +6,7 @@
   --color-ns-shell: #0b0f16;
   --color-ns-card: #151b26;
   --color-ns-panel: #151b26;
-  --color-ns-border: #1f2937;
+  --color-ns-border: #1e293b;
   --color-ns-hover: #1b2331;
   --color-ns-muted: #94a3b8;
   --color-ns-dim: #64748b;
@@ -28,6 +28,7 @@
   --animate-self-pulse: self-pulse 3s ease-out infinite;
   --animate-fade-up: fade-up 0.28s ease-out both;
   --animate-slide-in: slide-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-panel-fade: panel-fade 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 html {
@@ -104,6 +105,17 @@ body {
   }
 }
 
+@keyframes panel-fade {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @keyframes ticker {
   0%,
   100% {
@@ -130,12 +142,12 @@ body {
  * çizgilerini yumuşak koyu griye çekerken etiketleri okunur tutabiliyoruz.
  */
 .tm-tiles-base {
-  filter: saturate(0.2) brightness(1.04) contrast(0.78);
+  filter: saturate(0.18) brightness(1.08) contrast(0.8);
 }
 
 .tm-tiles-labels {
-  filter: grayscale(1) brightness(1.25) contrast(0.8);
-  opacity: 0.6;
+  filter: grayscale(1) brightness(1.72) contrast(1.05);
+  opacity: 0.92;
 }
 
 .leaflet-control-attribution {
@@ -211,33 +223,32 @@ body {
 
 .tm-pin__label {
   position: absolute;
-  top: 37px;
+  top: 38px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 132px;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: rgba(15, 20, 28, 0.78);
-  color: var(--color-map-label);
+  max-width: 148px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: rgba(15, 20, 28, 0.94);
+  color: #f1f5f9;
   font-family: var(--font-sans);
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   line-height: 1.35;
+  letter-spacing: 0.01em;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
   pointer-events: none;
-  transition:
-    color 0.18s ease,
-    background-color 0.18s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 .tm-pin:hover .tm-pin__label,
 .tm-pin.is-selected .tm-pin__label {
-  color: var(--color-map-label-strong);
-  background: rgba(15, 20, 28, 0.94);
+  color: #ffffff;
+  background: rgba(15, 20, 28, 0.98);
 }
 
 .tm-pin.is-selected {
@@ -259,19 +270,19 @@ body {
 /* ---------- Canlı masa rozeti ---------- */
 .tm-pin__badge {
   position: absolute;
-  top: 56px;
+  top: 58px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 176px;
-  padding: 1px 7px;
+  max-width: 186px;
+  padding: 2px 8px;
   border-radius: 999px;
-  border: 1px solid rgba(29, 155, 240, 0.26);
-  background: rgba(15, 20, 28, 0.9);
-  color: var(--color-map-person);
+  border: 1px solid rgba(29, 155, 240, 0.32);
+  background: rgba(15, 20, 28, 0.94);
+  color: #e0f2fe;
   font-family: var(--font-sans);
-  font-size: 9.5px;
-  font-weight: 500;
-  line-height: 1.55;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.5;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -282,6 +293,24 @@ body {
 .tm-pin__badge--mine {
   border-color: rgba(56, 189, 248, 0.45);
   color: #e0f2fe;
+}
+
+/* Açık imece: pin gövdesinin sol üstünde sade el sıkışma. */
+.tm-pin__imece {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(15, 20, 28, 0.94);
+  font-size: 9px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 /* ---------- Odak alanı (bağlantı kurulmamış kişiler) ---------- */
